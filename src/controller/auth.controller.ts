@@ -1,17 +1,37 @@
-import { Controller, Post, Body } from '@midwayjs/decorator';
-import { AuthService } from '../services/auth.service';
+import { Inject, Controller, Get, Post, Body } from '@midwayjs/core';
+import { Context } from '@midwayjs/koa';
+import { UserService } from '../service/user.service';
 
-@Controller('/auth')
-export class AuthController {
-    constructor(private readonly authService: AuthService) { }
+const userNameList = [];
+const userPasswordList = [];
 
-    @Post('/login')
-    async login(@Body() loginDto: { email: string; password: string }) {
-        return this.authService.login(loginDto);
-    }
+@Controller('/api')
+export class APIController {
+  @Inject()  //get data
+  ctx: Context;
 
-    @Post('/register')
-    async register(@Body() registerDto: { email: string; password: string }) {
-        return this.authService.register(registerDto);
-    }
+  @Inject()
+  userService: UserService;
+
+
+  @Post('/register')
+  async addUser(@Body() body: { username: string, password: string }) {
+    console.log('success');
+    this.ctx.body = {
+      success: true,
+      message: 'User registered successfully',
+    };
+    userNameList.push (body.username);
+    userPasswordList.push(body.password);
+    return;
+  }
+
+  @Get('/login')
+  async checkUser(){
+    return { success: true, message: {
+      userNameList,
+      userPasswordList,
+    } };
+  }
+
 }

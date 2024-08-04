@@ -1,7 +1,9 @@
 import { Configuration, App } from '@midwayjs/core';
 import * as koa from '@midwayjs/koa';
+import * as ws from '@midwayjs/ws';
 import * as validate from '@midwayjs/validate';
 import * as info from '@midwayjs/info';
+import * as crossDomain from '@midwayjs/cross-domain';
 import { join } from 'path';
 // import { DefaultErrorFilter } from './filter/default.filter';
 // import { NotFoundFilter } from './filter/notfound.filter';
@@ -10,7 +12,9 @@ import { ReportMiddleware } from './middleware/report.middleware';
 @Configuration({
   imports: [
     koa,
+    ws,
     validate,
+    crossDomain,
     {
       component: info,
       enabledEnvironment: ['local'],

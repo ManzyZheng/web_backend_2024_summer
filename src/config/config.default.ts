@@ -6,4 +6,9 @@ export default {
   koa: {
     port: 7001,
   },
+  cors: {
+    origin: '*', // 允许所有来源
+    allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH',
+    allowHeaders: 'Content-Type,Authorization',
+  },
 } as MidwayConfig;
