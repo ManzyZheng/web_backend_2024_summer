@@ -1,11 +1,16 @@
 import { Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
-import {  readFile, existsSync, writeFileSync } from 'fs';
+import { readFile, existsSync, writeFile } from 'fs';
+import { promisify } from 'util';
 
 export interface IUser {
     id: number;
     username: string;
     password: string;
+    activity: number;
 }
+
+const writeFileAsync = promisify(writeFile);
+const userPath = './user_cache';
 
 @Scope(ScopeEnum.Singleton)
 @Provide('fileDBService')
@@ -13,8 +18,8 @@ export class FileDBService {
     private _userList: IUser[] = [];
 
     async list() {
-        if (existsSync('./cache')) {
-            const buffer = await new Promise((resolve, reject) => readFile('./cache', (err, data) => {
+        if (existsSync(userPath)) {
+            const buffer = await new Promise((resolve, reject) => readFile(userPath, (err, data) => {
                 if (err) {
                     return reject(err);
                 }
@@ -25,10 +30,10 @@ export class FileDBService {
         return this._userList;
     }
 
-    private flushCache(list: IUser[]): void {
-        const data = JSON.stringify(list, null, 2); 
-        writeFileSync('./cache', data, 'utf-8');
-      }
+    private async flushCache(list: IUser[]): Promise<void> {
+        const data = JSON.stringify(list, null, 2);
+        await writeFileAsync(userPath, data, 'utf-8');
+    }
 
     async add(username: string, password: string) {
         const list = await this.list();
@@ -36,10 +41,12 @@ export class FileDBService {
         if (item) {
             throw new Error(`username ${username} exists`);
         }
+        const activity = 0;
         const user = {
             id: await this.incrId(),
             username,
-            password
+            password,
+            activity
         };
         list.push(user);
         await this.flushCache(list);
