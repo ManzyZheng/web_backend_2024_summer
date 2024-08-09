@@ -8,6 +8,7 @@ const circlePath = './circle_cache';
 export interface ICircle {
     id: number;
     name: string;
+    creator:string;
     description: string;
     createdAt: string;
 }
@@ -37,12 +38,13 @@ export class CircleDBService {
         await writeFileAsync(circlePath, data, 'utf-8');
     }
 
-    async add(name: string, description: string) {
+    async add(name: string, description: string,creator:string) {
         const list = await this.list();
         const circle = {
             id: await this.incrId(),
             name,
             description,
+            creator,
             createdAt: new Date().toISOString()
         };
         list.push(circle);
@@ -60,4 +62,19 @@ export class CircleDBService {
         }
         return maxId + 1;
     }
+
+    async findById(id: number) {
+        const list = await this.list();
+        console.log("Circle list:", list); // 输出圈子列表
+        const circle = list.find((item) => item.id === id);
+        if (circle) {
+            console.log("Found circle:", circle); // 输出找到的圈子
+            return circle;
+        } else {
+            console.log(`Circle with ID ${id} not found`); // 如果没找到，输出提示
+            return null;
+        }
+    }
+    
+    
 }

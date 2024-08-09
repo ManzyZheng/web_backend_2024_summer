@@ -35,9 +35,11 @@ export class APIController {
   async login(@Body() body: { username: string; password: string }): Promise<IGetUserResponse> {
     const { username, password } = body;
     const success = await this.userService.login(username, password);
+    console.log(1);
     if (success) {
       // 成功登录
       const user = await this.userService.getUser(username);
+      console.log(2);
       return { success: true, message: '登录成功', data: { id: user.id, username: user.username, password: user.password, activity: user.activity } };
     } else {
       // 登录失败

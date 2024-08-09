@@ -5,6 +5,12 @@ import { Context } from '@midwayjs/koa';
 export class NotFoundFilter {
   async catch(err: MidwayHttpError, ctx: Context) {
     // 404 错误会到这里
-    ctx.redirect('/404.html');
+    if (ctx.path === '/404.html') {
+      ctx.status = 404;
+      ctx.body = 'Not Found';
+    } else {
+      // 进行重定向到 404.html
+      ctx.redirect('/404.html');
+    }
   }
 }

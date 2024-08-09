@@ -2,66 +2,79 @@ import { Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
 import { readFile, existsSync, writeFile } from 'fs';
 import { promisify } from 'util';
 
-// 在文件中定义路径常量
-const postPath = './post_cache';
-
 export interface IPost {
-    id: number;
-    content: string;
-    authorId: number;
-    circleId: number;
-    createdAt: string;
-    imagePath?: string;  // 图片路径字段
+  id: number;
+  content: string;
+  creator: string;
+  circleId: number;
+  createdAt: string;
+  imagePaths?: string[]; // 支持多个图片路径
 }
 
 const writeFileAsync = promisify(writeFile);
+const readFileAsync = promisify(readFile);
 
 @Scope(ScopeEnum.Singleton)
 @Provide('postDBService')
 export class PostDBService {
-    private _postList: IPost[] = [];
+  private getPostsPath(circleId: number): string {
+    return `./circle_${circleId}_posts.json`;
+  }
 
-    async list() {
-        if (existsSync(postPath)) {
-            const buffer = await new Promise<Buffer>((resolve, reject) => readFile(postPath, (err, data) => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(data);
-            }));
-            this._postList = JSON.parse(buffer.toString());
-        }
-        return this._postList;
+  private async list(circleId: number): Promise<IPost[]> {
+    const postsPath = this.getPostsPath(circleId);
+    console.log(postsPath);
+    if (existsSync(postsPath)) {
+      const buffer = await readFileAsync(postsPath);
+      try {
+        return JSON.parse(buffer.toString());
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
+        return []; // 或者抛出错误，看具体需求
+      }
     }
+    return [];
+  }
+  
 
-    private async flushCache(list: IPost[]): Promise<void> {
-        const data = JSON.stringify(list, null, 2);
-        await writeFileAsync(postPath, data, 'utf-8');
-    }
+  private async flushCache(circleId: number, list: IPost[]): Promise<void> {
+    const postsPath = this.getPostsPath(circleId);
+    const data = JSON.stringify(list, null, 2);
+    await writeFileAsync(postsPath, data, 'utf-8');
+  }
 
-    async add(content: string, authorId: number, circleId: number, imagePath?: string) {
-        const list = await this.list();
-        const post = {
-            id: await this.incrId(),
-            content,
-            authorId,
-            circleId,
-            createdAt: new Date().toISOString(),
-            imagePath  // 保存图片路径
-        };
-        list.push(post);
-        await this.flushCache(list);
-        return post;
-    }
+  public async add(content: string, creator: string, circleId: number, imagePaths?: string[]): Promise<IPost> {
+    const list = await this.list(circleId);
+    const post: IPost = {
+      id: await this.incrId(circleId),
+      content,
+      creator,
+      circleId,
+      createdAt: new Date().toISOString(),
+      imagePaths: imagePaths || [], // 确保 imagePaths 存在，即使为空
+    };
+    list.push(post);
+    await this.flushCache(circleId, list);
+    return post;
+  }
 
-    private async incrId() {
-        const list = await this.list();
-        let maxId = 0;
-        for (const { id } of list) {
-            if (id > maxId) {
-                maxId = id;
-            }
-        }
-        return maxId + 1;
+  public async findById(circleId: number, id: number): Promise<IPost | undefined> {
+    const list = await this.list(circleId);
+    return list.find(post => post.id === id);
+  }
+
+  public async findByCircleId(circleId: number): Promise<IPost[]> {
+    return this.list(circleId);
+  }
+
+  private async incrId(circleId: number): Promise<number> {
+    const list = await this.list(circleId);
+    let maxId = 0;
+    for (const { id } of list) {
+      if (id > maxId) {
+        maxId = id;
+      }
     }
+    return maxId + 1;
+  }
 }
