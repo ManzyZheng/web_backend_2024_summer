@@ -59,9 +59,10 @@ export class PostDBService {
   }
 
   public async findById(circleId: number, id: number): Promise<IPost | undefined> {
-    const list = await this.list(circleId);
-    return list.find(post => post.id === id);
+    const posts = await this.list(circleId);
+    return posts.find(post => post.id === id);
   }
+  
 
   public async findByCircleId(circleId: number): Promise<IPost[]> {
     return this.list(circleId);

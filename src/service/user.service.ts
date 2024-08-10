@@ -3,6 +3,7 @@ import { IUserOptions } from '../interface';
 
 @Provide()
 export class UserService {
+  [x: string]: any;
   async getUser(options: IUserOptions) {
     return {
       uid: options.uid,

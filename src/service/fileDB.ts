@@ -73,5 +73,13 @@ export class FileDBService {
         return maxId + 1;
     }
 
-    // ...
+    async update(user: IUser): Promise<void> {
+        const list = await this.list();
+        const idx = list.findIndex((item) => item.id === user.id);
+        if (idx === -1) {
+            throw new Error(`User with ID ${user.id} not found`);
+        }
+        list[idx] = user;
+        await this.flushCache(list);
+    }
 }

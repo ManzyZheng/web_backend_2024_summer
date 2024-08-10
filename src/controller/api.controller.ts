@@ -1,7 +1,7 @@
 import { Inject, Controller, Get, Post, Body } from '@midwayjs/core';
 import { Context } from '@midwayjs/koa';
 import { UserService } from '../service/auth.service';
-import { IUser } from '../service/fileDB';
+import { FileDBService, IUser } from '../service/fileDB';
 
 interface IGetUserResponse {
   success: boolean;
@@ -17,6 +17,9 @@ export class APIController {
 
   @Inject()
   userService: UserService;
+
+  @Inject()
+  fileDBService: FileDBService;
 
 
   @Post('/register')
@@ -83,8 +86,18 @@ export class APIController {
     }
   }
 
-
-
+  @Post('/increaseActivity')
+  async increaseActivity(@Body() body: { username: string }) {
+    const { username } = body;
+    const user = await this.fileDBService.findByUsername(username); // 根据用户名查找用户
+    if (user) {
+      user.activity += 1; // 增加用户活跃度
+      await this.fileDBService.update(user); // 更新用户信息
+      return { success: true, data: user };
+    } else {
+      return { success: false, message: 'User not found' };
+    }
+  }
 }
 
 

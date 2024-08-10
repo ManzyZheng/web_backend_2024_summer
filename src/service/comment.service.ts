@@ -1,16 +1,15 @@
 import { Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
-import { readFile, existsSync, writeFile } from 'fs';
+import { readFile, existsSync, writeFile, mkdirSync } from 'fs';
 import { promisify } from 'util';
-
-// 在文件中定义路径常量
-const commentPath = './comment_cache';
+import * as path from 'path';
 
 export interface IComment {
-    id: number;
-    postId: number;
-    authorId: number;
-    content: string;
-    createdAt: string;
+  id: number;
+  postId: number;
+  circleId: number;
+  creator:string;
+  content: string;
+  createdAt: string;
 }
 
 const writeFileAsync = promisify(writeFile);
@@ -18,53 +17,68 @@ const writeFileAsync = promisify(writeFile);
 @Scope(ScopeEnum.Singleton)
 @Provide('commentDBService')
 export class CommentDBService {
-    private _commentList: IComment[] = [];
+  private getCommentFilePath(circleId: number, postId: number): string {
+    return path.join(__dirname, `../../data/comments/circle_${circleId}_post_${postId}_comments.json`);
+  }
 
-    async list() {
-        if (existsSync(commentPath)) {
-            const buffer = await new Promise<Buffer>((resolve, reject) => readFile(commentPath, (err, data) => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(data);
-            }));
-            this._commentList = JSON.parse(buffer.toString());
-        }
-        return this._commentList;
+  private ensureDirectoryExistence(filePath: string) {
+    const dirname = path.dirname(filePath);
+    if (existsSync(dirname)) {
+      return true;
     }
+    mkdirSync(dirname, { recursive: true });
+  }
 
-    private async flushCache(list: IComment[]): Promise<void> {
-        const data = JSON.stringify(list, null, 2);
-        await writeFileAsync(commentPath, data, 'utf-8');
+  async list(circleId: number, postId: number): Promise<IComment[]> {
+    const commentFilePath = this.getCommentFilePath(circleId, postId);
+    if (existsSync(commentFilePath)) {
+      const buffer = await new Promise<Buffer>((resolve, reject) =>
+        readFile(commentFilePath, (err, data) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve(data);
+        })
+      );
+      return JSON.parse(buffer.toString());
     }
+    return [];
+  }
 
-    async add(postId: number, authorId: number, content: string) {
-        const list = await this.list();
-        const comment = {
-            id: await this.incrId(),
-            postId,
-            authorId,
-            content,
-            createdAt: new Date().toISOString()
-        };
-        list.push(comment);
-        await this.flushCache(list);
-        return comment;
-    }
+  private async flushCache(circleId: number, postId: number, list: IComment[]): Promise<void> {
+    const commentFilePath = this.getCommentFilePath(circleId, postId);
+    this.ensureDirectoryExistence(commentFilePath);
+    const data = JSON.stringify(list, null, 2);
+    await writeFileAsync(commentFilePath, data, 'utf-8');
+  }
 
-    async findByPostId(postId: number) {
-        const list = await this.list();
-        return list.filter((item) => item.postId === postId);
-    }
+  async add(circleId: number, postId: number, creator: string, content: string) {
+    const list = await this.list(circleId, postId);
+    const comment: IComment = {
+      id: await this.incrId(circleId, postId),
+      circleId,
+      postId,
+      creator,
+      content,
+      createdAt: new Date().toISOString(),
+    };
+    list.push(comment);
+    await this.flushCache(circleId, postId, list);
+    return comment;
+  }
 
-    private async incrId() {
-        const list = await this.list();
-        let maxId = 0;
-        for (const { id } of list) {
-            if (id > maxId) {
-                maxId = id;
-            }
-        }
-        return maxId + 1;
+  async findByPostId(circleId: number, postId: number) {
+    return await this.list(circleId, postId);
+  }
+
+  private async incrId(circleId: number, postId: number) {
+    const list = await this.list(circleId, postId);
+    let maxId = 0;
+    for (const { id } of list) {
+      if (id > maxId) {
+        maxId = id;
+      }
     }
+    return maxId + 1;
+  }
 }
