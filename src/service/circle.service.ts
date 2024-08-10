@@ -3,7 +3,8 @@ import { readFile, existsSync, writeFile } from 'fs';
 import { promisify } from 'util';
 
 // 在文件中定义路径常量
-const circlePath = './circle_cache';
+const circlePath = './data/circle_cache';
+
 
 export interface ICircle {
     id: number;

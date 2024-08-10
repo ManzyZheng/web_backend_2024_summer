@@ -1,5 +1,6 @@
 import { Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
 import { readFile, existsSync, writeFile } from 'fs';
+import path = require('path');
 import { promisify } from 'util';
 
 export interface IPost {
@@ -18,7 +19,7 @@ const readFileAsync = promisify(readFile);
 @Provide('postDBService')
 export class PostDBService {
   private getPostsPath(circleId: number): string {
-    return `./circle_${circleId}_posts.json`;
+    return path.join(__dirname, `../../data/posts/circle_${circleId}_posts.json`);;
   }
 
   private async list(circleId: number): Promise<IPost[]> {

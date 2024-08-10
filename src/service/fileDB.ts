@@ -10,7 +10,7 @@ export interface IUser {
 }
 
 const writeFileAsync = promisify(writeFile);
-const userPath = './user_cache';
+const userPath = './data/user_cache';
 
 @Scope(ScopeEnum.Singleton)
 @Provide('fileDBService')

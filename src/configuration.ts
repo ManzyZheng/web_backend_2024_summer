@@ -57,6 +57,3 @@ export class ContainerLifeCycle {
     this.app.use(KoaStatic(path.join(__dirname, '../public')));
   }
 }
-
-
-
