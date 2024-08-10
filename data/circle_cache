@@ -1,16 +1,16 @@
 [
   {
     "id": 1,
-    "name": "Math",
-    "description": "about math",
+    "name": "Free",
+    "description": "Swimming Club",
     "creator": "zmz",
-    "createdAt": "2024-08-10T11:11:29.109Z"
+    "createdAt": "2024-08-10T19:07:10.044Z"
   },
   {
     "id": 2,
-    "name": "English",
-    "description": "about english",
-    "creator": "yyx",
-    "createdAt": "2024-08-10T15:25:40.966Z"
+    "name": "Math",
+    "description": "About Math",
+    "creator": "zmz",
+    "createdAt": "2024-08-10T19:08:02.983Z"
   }
 ]

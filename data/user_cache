@@ -3,12 +3,6 @@
     "id": 1,
     "username": "zmz",
     "password": "123",
-    "activity": 6
-  },
-  {
-    "id": 2,
-    "username": "yyx",
-    "password": "123",
-    "activity": 1
+    "activity": 5
   }
 ]
