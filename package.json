@@ -12,6 +12,7 @@
     "@midwayjs/info": "^3.16.8",
     "@midwayjs/koa": "^3.16.8",
     "@midwayjs/logger": "^3.1.0",
+    "@midwayjs/static-file": "^3.16.8",
     "@midwayjs/upload": "^3.16.8",
     "@midwayjs/validate": "^3.16.8",
     "axios": "^1.7.2",

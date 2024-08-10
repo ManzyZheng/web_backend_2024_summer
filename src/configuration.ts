@@ -11,6 +11,7 @@ import { NotFoundFilter } from './filter/notfound.filter';
 import { ReportMiddleware } from './middleware/report.middleware';
 import koaBody from 'koa-body';
 import * as KoaStatic from 'koa-static';
+import * as staticFile from '@midwayjs/static-file';
 
 @Configuration({
   imports: [
@@ -19,6 +20,7 @@ import * as KoaStatic from 'koa-static';
     crossDomain,
     validate,
     upload,
+    staticFile,
     {
       component: info,
       enabledEnvironment: ['local'],
